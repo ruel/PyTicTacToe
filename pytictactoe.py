@@ -29,53 +29,48 @@
 	SCRIPT, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 	General Description: 	The CPU difficulty is Human-Like. Means, you can still WIN!
-				I made it so, because I do not want this to be boring, and
-				end up with loses and draws.
+							I made it so, because I do not want this to be boring, and
+							end up with loses and draws.
 '''
 
-import os, random, time
+import os, random, time, operator
 
-# Classes #################################################################################
+'''
+	Classes
+'''
 
-# Class for players (user and cpu)
 class Player:
-	def __init__(self, arg, arg2):
-		self.name = arg
-		self.wep = arg2
+	'''Class for players (user and cpu)'''
+	def __init__(self, name, weapon):
+		self.name = name
+		self.weapon = weapon
 		self.moves = 0
 		self.first = False
 		self.won = False
 
-# Class for the cells
 class BoardCell:
-	def __init__(self, arg, arg2, arg3):
-		self.x = arg
-		self.y = arg2
-		self.num = arg3
+	'''Class for the cells'''
+	def __init__(self, number):
+		self.number = number
 		self.empty = True
 		self.content = ' '
 		
-# Main program flow ########################################################################
+'''
+	Main Program Flow
+'''
+		
 def main():
-	ru, rc, rd = 0, 0, 0
+	recorduser, recordcpu, recorddraw = 0, 0, 0
 	while True:
-		# Choose weapon!
-		uwep, cwep = choosewep()
-		# Create the user and cpu players
-		user = Player('User', uwep)
-		cpu = Player('CPU', cwep)
 		# Toss the coin!
 		won = cointoss()
 		if won:
-			while True:
-				fr = raw_input('Who goes first (U)ser or (C)PU? ')
-				if fr == 'U':
-					user.first = True
-					break
-				elif fr == 'C':
-					cpu.first = True
-					break
+			user = Player('User', 'X')
+			cpu = Player('CPU', 'O')
+			user.first = True
 		else:
+			user = Player('User', 'O')
+			cpu = Player('CPU', 'X')
 			cpu.first = True
 		print user.name if user.first else cpu.name, 'goes first.'
 		# Timeout 5 seconds
@@ -85,47 +80,35 @@ def main():
 		tgame(user, cpu)
 		# Show the winner
 		if user.won:
-			ru += 1
+			recorduser += 1
 			winner = user
 		elif cpu.won:
-			rc += 1
+			recordcpu += 1
 			winner = cpu
 		else:
-			rd += 1
+			recorddraw += 1
 			winner = Player('DRAW', '-')
-		print '\nWINNER:', winner.name, '(' + winner.wep + ')'
+		print '\nWINNER:', winner.name, '(' + winner.weapon + ')'
 		print 'Moves:', winner.moves
 		# Record
-		print '\nRecord:\tUser:', ru, '\n\tCPU:', rc, '\n\tDRAW:', rd
+		print '\nRecord:\tUser:', recorduser, '\n\tCPU:', recordcpu, '\n\tDRAW:', recorddraw
 		# Play Again?
 		while True:
-			pa = raw_input('\nPlay again? [Y]es or [N]o: ')
-			if pa == 'Y' or pa == 'N':
+			choice = raw_input('\nPlay again? [Y]es or [N]o: ')
+			if choice == 'Y' or choice == 'N':
 				break
-		if pa == 'Y':
+		if choice == 'Y':
 			cls()
 		else:
 			break
 	print 
 	
-# Sub functions ###############################################################################
-	
-# Sub function for choosing between X and O
-def choosewep():
-	while True:
-		uwep = raw_input('Please choose your weapon (X or O): ')
-		if uwep == 'X':
-			cwep = 'O'
-			break
-		elif uwep == 'O':
-			cwep = 'X'
-			break
-		else:
-			print 'Invalid Input. Try again.'
-	return [uwep, cwep]
+'''
+	Sub function section
+'''
 
-# Coin Toss sub function
 def cointoss():
+	'''Coin Toss sub function'''
 	won = False
 	while True:
 		choice = raw_input('Heads or Tails (H or T): ')
@@ -143,168 +126,157 @@ def cls():
 	# Cross-platform :)
 	os.system('cls' if os.name == 'nt' else 'clear')
 
-# Draw the board for the game
-def drawboard(bcont):
+def drawboard(board):
+	'''Draw the board for the game'''
 	cls()
 	boardstr = ''
 	print boardstr + '\n'
-	for i in range(3):
+	i = 0
+	for row in board:
 		boardstr += '\t'
 		if i == 0:
 			boardstr += '      |       |      \n\t'
-		for j in range(3):
-			boardstr += '  ' + bcont[i][j].content
-			if j != 2:
-			    boardstr += '   | ' 
-		boardstr += '\n'
+		boardstr += '  {0}   |   {1}   |   {2}\n'.format(*[cell.content for cell in row])
 		if i != 2:
 			boardstr += '\t      |       |      \n\t------|-------|------\n\t      |       |      \n'
 		else:
 			boardstr += '\t      |       |      \n'
+		i += 1
 	print boardstr
 	
-# Initialize the cells on the board
 def boardinit():
-	bcont = [ [ None for j in range(3) ] for i in range(3) ]
-	c = 1
+	'''Initialize the cells on the board'''
+	return [[BoardCell((i + 1) + (j * 3)) for i in range(3)] for j in range(3)]
+
+def bdraw(number, board, player):
+	'''Insert X or O'''
 	for i in range(3):
 		for j in range(3):
-			bcont[i][j] = BoardCell(i, j, c)
-			c += 1
-	return bcont
-	
-# Insert X or O
-def bdraw(num, bcont, player):
-	for i in range(3):
-		for j in range(3):
-			#print bcont[i][j].num, num
-			if bcont[i][j].num == num:
-				if bcont[i][j].empty:
-					bcont[i][j].content = player.wep
-					bcont[i][j].empty = False
+			if board[i][j].number == number:
+				if board[i][j].empty:
+					board[i][j].content = player.weapon
+					board[i][j].empty = False
 					return True
 	return False
 
-# User's turn
-def usermove(user, bcont):
+def usermove(user, board):
+	'''User's turn'''
 	user.moves += 1
 	while True:
-		num = 0
+		number = 0
 		try:
-			num = int(raw_input('Your turn [1-9]: '))
+			number = int(raw_input('Your turn [1-9]: '))
 		except:
 			print 'Invalid input'
-		if num >= 1 and num <= 9:
-				if bdraw(num, bcont, user):
+		if number >= 1 and number <= 9:
+				if bdraw(number, board, user):
 					break
 			 
-# CPU's turn
-def cpumove(cpu, user, bcont):
+def cpumove(cpu, user, board):
+	'''CPU's turn'''
 	cpu.moves += 1
-	num = getwnum(bcont, cpu.wep, cpu.wep)
-	if num == -2:
-		num = getwnum(bcont, user.wep, cpu.wep)
+	number = getwnumber(board, cpu.weapon, cpu.weapon)
+	if number == -2:
+		number = getwnumber(board, user.weapon, cpu.weapon)
 	while True:
-		if num <= 0:
-			num = random.randrange(1, 10)
-		if bdraw(num, bcont, cpu):
+		if number <= 0:
+			number = random.randrange(1, 10)
+		if bdraw(number, board, cpu):
 			break
-		num = -1
+		number = -1
 		
-# Get the board contents
-def getboard(bcont, wep):
+def getboard(board, weapon):
+	'''Get the board contents'''
 	xo = []
 	for i in range(3):
 		for j in range(3):
-			if not bcont[i][j].empty:
-				if wep == 'T':
-					xo.append(bcont[i][j].num)
+			if not board[i][j].empty:
+				if weapon == 'T':
+					xo.append(board[i][j].number)
 				else:
-					if bcont[i][j].content == wep:
-						xo.append(bcont[i][j].num)
+					if board[i][j].content == weapon:
+						xo.append(board[i][j].number)
 	return xo
 
-# Check if there's a winning/breaking cell
-def getwnum(bcont, wep, cwep):
-	num = -2
-	t = getboard(bcont, wep)
-	ex = getboard(bcont, 'T')
+def getwnumber(board, weapon, cweapon):
+	'''Check if there's a winning/breaking cell'''
+	number = -2
+	t = getboard(board, weapon)
+	ex = getboard(board, 'T')
 	# Line 1 of 8
 	if isin(1, t) and isin(2, t) and not isin(3, ex):
-		num = 3
+		number = 3
 	elif isin(2, t) and isin(3, t) and not isin(1, ex):
-		num = 1
+		number = 1
 	elif isin(1, t) and isin(3, t) and not isin(2, ex):
-		num = 2
+		number = 2
 		
 	# Line 2 of 8
 	elif isin(4, t) and isin(5, t) and not isin(6, ex):
-		num = 6
+		number = 6
 	elif isin(5, t) and isin(6, t) and not isin(4, ex):
-		num = 4
+		number = 4
 	elif isin(4, t) and isin(6, t) and not isin(5, ex):
-		num = 5
+		number = 5
 		
 	# Line 3 of 8
 	elif isin(7, t) and isin(8, t) and not isin(9, ex):
-		num = 9
+		number = 9
 	elif isin(8, t) and isin(9, t) and not isin(7, ex):
-		num = 7
+		number = 7
 	elif isin(7, t) and isin(9, t) and not isin(8, ex):
-		num = 8
+		number = 8
 		
 	# Line 4 of 8
 	elif isin(1, t) and isin(5, t) and not isin(9, ex):
-		num = 9
+		number = 9
 	elif isin(5, t) and isin(9, t) and not isin(1, ex):
-		num = 1
+		number = 1
 	elif isin(1, t) and isin(9, t) and not isin(5, ex):
-		num = 5
+		number = 5
 		
 	# Line 5 of 8
 	elif isin(3, t) and isin(5, t) and not isin(7, ex):
-		num = 7
+		number = 7
 	elif isin(5, t) and isin(7, t) and not isin(3, ex):
-		num = 3
+		number = 3
 	elif isin(3, t) and isin(7, t) and not isin(5, ex):
-		num = 5
+		number = 5
 		
 	# Line 6 of 8
 	elif isin(1, t) and isin(4, t) and not isin(7, ex):
-		num = 7
+		number = 7
 	elif isin(4, t) and isin(7, t) and not isin(1, ex):
-		num = 1
+		number = 1
 	elif isin(1, t) and isin(7, t) and not isin(4, ex):
-		num = 4
+		number = 4
 		
 	# Line 7 of 8
 	elif isin(2, t) and isin(5, t) and not isin(8, ex):
-		num = 8
+		number = 8
 	elif isin(5, t) and isin(8, t) and not isin(2, ex):
-		num = 2
+		number = 2
 	elif isin(2, t) and isin(8, t) and not isin(5, ex):
-		num = 5
+		number = 5
 		
 	# Line 8 of 8
 	elif isin(3, t) and isin(6, t) and not isin(9, ex):
-		num = 9
+		number = 9
 	elif isin(6, t) and isin(9, t) and not isin(3, ex):
-		num = 3
+		number = 3
 	elif isin(3, t) and isin(9, t) and not isin(6, ex):
-		num = 6
+		number = 6
 	else:
-		if wep == cwep:
-			num == 0
-	return num
-	
-# Checking if a value exists in a list
-def isin(val, list):
-	if val in list:
-		return True
-	return False
+		if weapon == cweapon:
+			number == 0
+	return number
 
-# Internal number checking. To prevent, messy code (sort of)
-def checknum(xo):
+def isin(val, list):
+	'''Checking if a value exists in a list'''
+	return val in list
+
+def checknumber(xo):
+	'''Internal number checking. To prevent, messy code (sort of)'''
 	if isin(1, xo) and isin(2, xo) and isin(3, xo) or \
 	isin(4, xo) and isin(5, xo) and isin(6, xo) or \
 	isin(7, xo) and isin(8, xo) and isin(9, xo) or \
@@ -316,42 +288,48 @@ def checknum(xo):
 		return True
 	return False
 
-# Check if someone won already
-def checkwin(bcont, wep):
-	xo = getboard(bcont, wep)
-	if checknum(xo):
+def checkwin(board, weapon):
+	'''Check if someone won already'''
+	xo = getboard(board, weapon)
+	if checknumber(xo):
 		return True
 	return False
 	
-def checktie(bcont):
-	t = getboard(bcont, 'T')
+def checktie(board):
+	'''Check if it's a draw'''
+	t = getboard(board, 'T')
 	if len(t) == 9:
 		return True
 	return False
 	
-# Main Game function
-def tgame(user, cpu):	
-	bcont = boardinit()
-	drawboard(bcont)
+def tgame(user, cpu):
+	'''Main Game function'''
+	board = boardinit()
+	drawboard(board)
 	if cpu.first:
-		cpumove(cpu, user, bcont)
-		drawboard(bcont)
+		cpumove(cpu, user, board)
+		drawboard(board)
 	while True:
-		usermove(user, bcont)
-		drawboard(bcont)
-		if checktie(bcont):
+		usermove(user, board)
+		drawboard(board)
+		if checktie(board):
 			break
-		if checkwin(bcont, user.wep):
+		if checkwin(board, user.weapon):
 			user.won = True
 			break
-		cpumove(cpu, user, bcont)
-		drawboard(bcont)
-		if checktie(bcont):
+		cpumove(cpu, user, board)
+		drawboard(board)
+		if checktie(board):
 			break
-		if checkwin(bcont, cpu.wep):
+		if checkwin(board, cpu.weapon):
 			cpu.won = True
 			break
 
-# We're not in a module, aren't we? #############################################################
+'''
+	Lines below is the entry point of the script
+'''
+
 if __name__ == '__main__':
 	main()
+
+'''End of Code'''
