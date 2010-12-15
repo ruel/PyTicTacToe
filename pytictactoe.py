@@ -29,8 +29,8 @@
 	SCRIPT, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 	General Description: 	The CPU difficulty is Human-Like. Means, you can still WIN!
-							I made it so, because I do not want this to be boring, and
-							end up with loses and draws.
+				I made it so, because I do not want this to be boring, and
+				end up with loses and draws.
 '''
 
 import os, random, time
