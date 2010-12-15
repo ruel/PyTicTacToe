@@ -175,9 +175,9 @@ def usermove(user, board):
 def cpumove(cpu, user, board):
 	'''CPU's turn'''
 	cpu.moves += 1
-	number = getwnumber(board, cpu.weapon, cpu.weapon)
+	number = getwnumber(board, cpu.weapon)
 	if number == -2:
-		number = getwnumber(board, user.weapon, cpu.weapon)
+		number = getwnumber(board, user.weapon)
 	while True:
 		if number <= 0:
 			number = random.randrange(1, 10)
@@ -198,7 +198,7 @@ def getboard(board, weapon):
 						xo.append(board[i][j].number)
 	return xo
 
-def getwnumber(board, weapon, cweapon):
+def getwnumber(board, weapon):
 	'''Check if there's a winning/breaking cell'''
 	number = -2
 	t = getboard(board, weapon)
@@ -266,9 +266,6 @@ def getwnumber(board, weapon, cweapon):
 		number = 3
 	elif isin(3, t) and isin(9, t) and not isin(6, ex):
 		number = 6
-	else:
-		if weapon == cweapon:
-			number == 0
 	return number
 
 def isin(val, list):
