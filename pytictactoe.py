@@ -40,7 +40,9 @@ import os, random, time, operator
 '''
 
 class Player:
-	'''Class for players (user and cpu)'''
+	'''
+		Class for players (user and cpu)
+	'''
 	def __init__(self, name, weapon):
 		self.name = name
 		self.weapon = weapon
@@ -49,21 +51,23 @@ class Player:
 		self.won = False
 
 class BoardCell:
-	'''Class for the cells'''
+	'''
+		Class for the cells
+	'''
 	def __init__(self, number):
 		self.number = number
 		self.empty = True
 		self.content = ' '
 		
-'''
-	Main Program Flow
-'''
-		
 def main():
+	'''
+		Main Program Flow
+	'''
 	recorduser, recordcpu, recorddraw = 0, 0, 0
 	while True:
 		# Toss the coin!
 		won = cointoss()
+		
 		if won:
 			user = Player('User', 'X')
 			cpu = Player('CPU', 'O')
@@ -72,12 +76,16 @@ def main():
 			user = Player('User', 'O')
 			cpu = Player('CPU', 'X')
 			cpu.first = True
+			
 		print user.name if user.first else cpu.name, 'goes first.'
+		
 		# Timeout 5 seconds
 		print 'Clearing screen in 3 seconds (Get Ready!)'
 		time.sleep(3)
+		
 		# Let the game begin
 		tgame(user, cpu)
+		
 		# Show the winner
 		if user.won:
 			recorduser += 1
@@ -88,19 +96,26 @@ def main():
 		else:
 			recorddraw += 1
 			winner = Player('DRAW', '-')
+			
 		print '\nWINNER:', winner.name, '(' + winner.weapon + ')'
 		print 'Moves:', winner.moves
+		
 		# Record
 		print '\nRecord:\tUser:', recorduser, '\n\tCPU:', recordcpu, '\n\tDRAW:', recorddraw
+		
 		# Play Again?
 		while True:
 			choice = raw_input('\nPlay again? [Y]es or [N]o: ')
 			if choice == 'Y' or choice == 'N':
 				break
+		
+		# If yes, clear the screen, else break the loop
 		if choice == 'Y':
 			cls()
 		else:
 			break
+	
+	# Print empty space
 	print 
 	
 '''
@@ -108,30 +123,38 @@ def main():
 '''
 
 def cointoss():
-	'''Coin Toss sub function'''
+	'''
+		Coin Toss sub function
+	'''
 	won = False
+	
 	while True:
 		choice = raw_input('Heads or Tails (H or T): ')
 		if choice == 'H' or choice == 'T':
 			print 'Tossing Coin..'
-			coin = ['Heads', 'Tails'][random.randrange(0,2)]
+			coin = ['Heads', 'Tails'][random.randrange(0, 2)]
 			print '\n -- ', coin , ' -- \n'
 			if  coin[0] == choice:
 				won = True
 			break
+			
 	return won
 
-# Clear screen subfunction
 def cls():
-	# Cross-platform :)
+	'''
+		Clear the screen (works for Windows and UNIX.. so far)
+	'''
 	os.system('cls' if os.name == 'nt' else 'clear')
 
 def drawboard(board):
-	'''Draw the board for the game'''
+	'''
+		Draw the board for the game
+	'''
 	cls()
 	boardstr = ''
 	print boardstr + '\n'
 	i = 0
+	
 	for row in board:
 		boardstr += '\t'
 		if i == 0:
@@ -142,14 +165,19 @@ def drawboard(board):
 		else:
 			boardstr += '\t      |       |      \n'
 		i += 1
+		
 	print boardstr
 	
 def boardinit():
-	'''Initialize the cells on the board'''
+	'''
+		Initialize the cells on the board
+	'''
 	return [[BoardCell((i + 1) + (j * 3)) for i in range(3)] for j in range(3)]
 
 def bdraw(number, board, player):
-	'''Insert X or O'''
+	'''
+		Draw the letter ('X' or 'O') to the board
+	'''
 	for i in range(3):
 		for j in range(3):
 			if board[i][j].number == number:
@@ -160,8 +188,11 @@ def bdraw(number, board, player):
 	return False
 
 def usermove(user, board):
-	'''User's turn'''
+	'''
+		User's turn
+	'''
 	user.moves += 1
+	
 	while True:
 		number = 0
 		try:
@@ -173,11 +204,15 @@ def usermove(user, board):
 					break
 			 
 def cpumove(cpu, user, board):
-	'''CPU's turn'''
+	'''
+		CPU's turn
+	'''
 	cpu.moves += 1
 	number = getwnumber(board, cpu.weapon)
+	
 	if number == -2:
 		number = getwnumber(board, user.weapon)
+		
 	while True:
 		if number <= 0:
 			number = random.randrange(1, 10)
@@ -186,7 +221,9 @@ def cpumove(cpu, user, board):
 		number = -1
 		
 def getboard(board, weapon):
-	'''Get the board contents'''
+	'''
+		Get the board contents
+	'''
 	xo = []
 	for i in range(3):
 		for j in range(3):
@@ -196,13 +233,17 @@ def getboard(board, weapon):
 				else:
 					if board[i][j].content == weapon:
 						xo.append(board[i][j].number)
+						
 	return xo
 
 def getwnumber(board, weapon):
-	'''Check if there's a winning/breaking cell'''
+	'''
+		Check if there's a winning/breaking cell
+	'''
 	number = -2
 	t = getboard(board, weapon)
 	ex = getboard(board, 'T')
+	
 	# Line 1 of 8
 	if isin(1, t) and isin(2, t) and not isin(3, ex):
 		number = 3
@@ -269,7 +310,9 @@ def getwnumber(board, weapon):
 	return number
 
 def isin(val, list):
-	'''Checking if a value exists in a list'''
+	'''
+		Checking if a value exists in a list
+	'''
 	return val in list
 
 def checknumber(xo):
@@ -283,41 +326,57 @@ def checknumber(xo):
 	isin(2, xo) and isin(5, xo) and isin(8, xo) or \
 	isin(3, xo) and isin(6, xo) and isin(9, xo):
 		return True
+		
 	return False
 
 def checkwin(board, weapon):
-	'''Check if someone won already'''
+	'''
+		Check if someone won already
+	'''
 	xo = getboard(board, weapon)
+	
 	if checknumber(xo):
 		return True
+		
 	return False
 	
 def checktie(board):
-	'''Check if it's a draw'''
+	'''
+		Check if it's a draw
+	'''
 	t = getboard(board, 'T')
+	
 	if len(t) == 9:
 		return True
+		
 	return False
 	
 def tgame(user, cpu):
 	'''Main Game function'''
 	board = boardinit()
 	drawboard(board)
+	
 	if cpu.first:
 		cpumove(cpu, user, board)
 		drawboard(board)
+		
 	while True:
 		usermove(user, board)
 		drawboard(board)
+		
 		if checktie(board):
 			break
+			
 		if checkwin(board, user.weapon):
 			user.won = True
 			break
+			
 		cpumove(cpu, user, board)
 		drawboard(board)
+		
 		if checktie(board):
 			break
+			
 		if checkwin(board, cpu.weapon):
 			cpu.won = True
 			break
