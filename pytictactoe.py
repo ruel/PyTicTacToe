@@ -364,21 +364,21 @@ def tgame(user, cpu):
 		usermove(user, board)
 		drawboard(board)
 		
-		if checktie(board):
-			break
-			
 		if checkwin(board, user.weapon):
 			user.won = True
 			break
-			
-		cpumove(cpu, user, board)
-		drawboard(board)
 		
 		if checktie(board):
 			break
-			
+
+		cpumove(cpu, user, board)
+		drawboard(board)
+		
 		if checkwin(board, cpu.weapon):
 			cpu.won = True
+			break
+		
+		if checktie(board):
 			break
 
 '''
